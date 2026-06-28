@@ -1,0 +1,6 @@
+{
+  "name": "Virtual Piano",
+  "description": "An interactive virtual piano supporting multiple sound styles and computer keyboard controls, allowing users to play, record, and visualize music.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
