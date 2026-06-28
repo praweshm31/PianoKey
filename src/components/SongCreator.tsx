@@ -125,6 +125,15 @@ export default function SongCreator() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check file size (15 MB maximum)
+    const MAX_SIZE_MB = 15;
+    const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+    if (file.size > MAX_SIZE_BYTES) {
+      alert(`The selected file is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please upload an instrumental file under ${MAX_SIZE_MB} MB to ensure smooth processing and performance on your device.`);
+      e.target.value = ''; // Reset input element so user can try again
+      return;
+    }
+
     setUploadedFileName(file.name);
     const ctx = getAudioContext();
     stopInstrumentalOnly();
@@ -136,6 +145,9 @@ export default function SongCreator() {
     } catch (err) {
       console.error('Error decoding audio file:', err);
       alert('Could not parse audio file. Please upload a standard MP3, WAV, or AAC file.');
+      setUploadedFileName('');
+      setInstrumentalBuffer(null);
+      e.target.value = '';
     }
   };
 
@@ -558,7 +570,7 @@ export default function SongCreator() {
               <div className="border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/40 p-4 rounded-lg text-center relative cursor-pointer group transition-colors">
                 <input
                   type="file"
-                  accept="audio/*"
+                  accept="audio/*, .mp3, .wav, .m4a, .ogg, .aac, .mp4"
                   onChange={handleFileUpload}
                   className="absolute inset-0 opacity-0 cursor-pointer"
                 />
@@ -566,7 +578,7 @@ export default function SongCreator() {
                 <span className="text-xs font-semibold text-slate-300 block">
                   {uploadedFileName ? 'Change Audio File' : 'Drag & Drop or Click to Upload'}
                 </span>
-                <span className="text-[10px] text-slate-500 mt-1 block">MP3, WAV, M4A or OGG</span>
+                <span className="text-[10px] text-slate-500 mt-1 block">MP3, WAV, M4A or OGG (Max 15 MB)</span>
               </div>
 
               {uploadedFileName && (
