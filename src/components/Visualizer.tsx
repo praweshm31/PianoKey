@@ -55,6 +55,36 @@ export default function Visualizer({ activeNotes, style }: VisualizerProps) {
           accent: 'rgba(168, 85, 247, 0.45)', // purple
           particleColors: ['#a855f7', '#9333ea', '#7e22ce', '#f3e8ff']
         };
+      case 'flute':
+        return {
+          bg: '#042f2e', // dark teal/breath forest
+          accent: 'rgba(20, 184, 166, 0.45)', // teal glow
+          particleColors: ['#14b8a6', '#0d9488', '#0f766e', '#ccfbf1']
+        };
+      case 'tabla':
+        return {
+          bg: '#1c1917', // dark warm stone
+          accent: 'rgba(245, 158, 11, 0.45)', // rich amber
+          particleColors: ['#f59e0b', '#d97706', '#b54708', '#fef3c7']
+        };
+      case 'guitar':
+        return {
+          bg: '#1c1917', // dark guitar wood
+          accent: 'rgba(249, 115, 22, 0.45)', // fiery copper/orange
+          particleColors: ['#f97316', '#ea580c', '#c2410c', '#ffedd5']
+        };
+      case 'sitar':
+        return {
+          bg: '#1f1214', // deep mystique dark rose
+          accent: 'rgba(244, 63, 94, 0.45)', // vibrant sitar rose
+          particleColors: ['#f43f5e', '#e11d48', '#be123c', '#ffe4e6']
+        };
+      case 'mandolin':
+        return {
+          bg: '#1e1b15', // dark antique brass
+          accent: 'rgba(234, 179, 8, 0.45)', // bright gold
+          particleColors: ['#eab308', '#ca8a04', '#a16207', '#fef9c3']
+        };
     }
   };
 

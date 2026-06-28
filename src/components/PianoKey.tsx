@@ -47,6 +47,26 @@ export default function PianoKey({
         return isBlack
           ? 'bg-purple-500 shadow-[0_0_15px_#a855f7] border-purple-400'
           : 'bg-purple-100 border-purple-300 shadow-[inset_0_-8px_0_#a855f7]';
+      case 'flute':
+        return isBlack
+          ? 'bg-teal-500 shadow-[0_0_15px_#14b8a6] border-teal-400'
+          : 'bg-teal-100 border-teal-300 shadow-[inset_0_-8px_0_#14b8a6]';
+      case 'tabla':
+        return isBlack
+          ? 'bg-amber-500 shadow-[0_0_15px_#f59e0b] border-amber-400'
+          : 'bg-amber-100 border-amber-300 shadow-[inset_0_-8px_0_#f59e0b]';
+      case 'guitar':
+        return isBlack
+          ? 'bg-orange-500 shadow-[0_0_15px_#f97316] border-orange-400'
+          : 'bg-orange-100 border-orange-300 shadow-[inset_0_-8px_0_#f97316]';
+      case 'sitar':
+        return isBlack
+          ? 'bg-rose-500 shadow-[0_0_15px_#f43f5e] border-rose-400'
+          : 'bg-rose-100 border-rose-300 shadow-[inset_0_-8px_0_#f43f5e]';
+      case 'mandolin':
+        return isBlack
+          ? 'bg-yellow-500 shadow-[0_0_15px_#eab308] border-yellow-400'
+          : 'bg-yellow-100 border-yellow-300 shadow-[inset_0_-8px_0_#eab308]';
     }
   };
 

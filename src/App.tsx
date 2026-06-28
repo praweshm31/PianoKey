@@ -582,7 +582,9 @@ export default function App() {
           <span>Velocity: <span className="text-indigo-400">127</span></span>
           <span>Scale: <span className="text-indigo-400">C Major</span></span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
+          <span>Created by <span className="text-indigo-400 font-bold">PR Meshram</span></span>
+          <span>&bull;</span>
           <span>Connected Devices: (0)</span>
         </div>
       </footer>
