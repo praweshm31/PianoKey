@@ -5,6 +5,7 @@ import Visualizer from './components/Visualizer';
 import PianoKey from './components/PianoKey';
 import Controls from './components/Controls';
 import SongLibrary from './components/SongLibrary';
+import SongCreator from './components/SongCreator';
 import { Music, AlertCircle, Info, Sparkles, Piano } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -33,6 +34,7 @@ export default function App() {
 
   // Timeout/Interval refs to clean up scheduled playbacks
   const playbackTimeoutsRef = useRef<number[]>([]);
+  const activeTouchNotesRef = useRef<Set<string>>(new Set());
 
   // Load recordings on startup
   useEffect(() => {
@@ -197,6 +199,68 @@ export default function App() {
         return list;
       });
     }
+  };
+
+  // Handle continuous touch moves / glissando across keys (especially for iPad & mobile)
+  const handleKeyboardTouch = (e: React.TouchEvent) => {
+    // Prevent default scrolling/zooming gestures while playing piano
+    e.preventDefault();
+
+    const currentTouchNotes = new Set<string>();
+
+    for (let i = 0; i < e.touches.length; i++) {
+      const touch = e.touches[i];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      const keyElement = element?.closest('[data-note]');
+      if (keyElement) {
+        const note = keyElement.getAttribute('data-note');
+        if (note) {
+          currentTouchNotes.add(note);
+        }
+      }
+    }
+
+    // Play notes that are newly touched
+    for (const note of currentTouchNotes) {
+      if (!activeTouchNotesRef.current.has(note)) {
+        handleNotePress(note);
+      }
+    }
+
+    // Release notes that are no longer touched
+    for (const note of activeTouchNotesRef.current) {
+      if (!currentTouchNotes.has(note)) {
+        handleNoteRelease(note);
+      }
+    }
+
+    activeTouchNotesRef.current = currentTouchNotes;
+  };
+
+  const handleKeyboardTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    const currentTouchNotes = new Set<string>();
+
+    for (let i = 0; i < e.touches.length; i++) {
+      const touch = e.touches[i];
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      const keyElement = element?.closest('[data-note]');
+      if (keyElement) {
+        const note = keyElement.getAttribute('data-note');
+        if (note) {
+          currentTouchNotes.add(note);
+        }
+      }
+    }
+
+    // Release any notes that are no longer touched
+    for (const note of activeTouchNotesRef.current) {
+      if (!currentTouchNotes.has(note)) {
+        handleNoteRelease(note);
+      }
+    }
+
+    activeTouchNotesRef.current = currentTouchNotes;
   };
 
   // Select a Song
@@ -448,8 +512,14 @@ export default function App() {
                 </div>
               </div>
 
-              {/* The piano keys container */}
-              <div className="relative w-full flex bg-stone-350 select-none pt-4 rounded-b overflow-visible">
+              {/* The piano keys container with continuous touch slide tracking */}
+              <div 
+                className="relative w-full flex bg-stone-350 select-none pt-4 rounded-b overflow-visible touch-none"
+                onTouchStart={handleKeyboardTouch}
+                onTouchMove={handleKeyboardTouch}
+                onTouchEnd={handleKeyboardTouchEnd}
+                onTouchCancel={handleKeyboardTouchEnd}
+              >
                 {/* 1. White keys */}
                 {PIANO_NOTES.filter((n) => n.type === 'white').map((noteConfig) => {
                   const isNoteActive = activeNotes.has(noteConfig.note);
@@ -573,6 +643,9 @@ export default function App() {
           </div>
         </div>
 
+        {/* 3.5 Studio Vocal Recorder & Song Mixer */}
+        <SongCreator />
+
       </main>
 
       {/* 4. Footer */}
@@ -583,7 +656,7 @@ export default function App() {
           <span>Scale: <span className="text-indigo-400">C Major</span></span>
         </div>
         <div className="flex items-center gap-4">
-          <span>Created by <span className="text-indigo-400 font-bold">PR Meshram</span></span>
+          <span>Created by <span className="text-indigo-400 font-bold">Prawesh Meshram</span></span>
           <span>&bull;</span>
           <span>Connected Devices: (0)</span>
         </div>

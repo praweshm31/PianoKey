@@ -2,7 +2,7 @@ import { PianoStyle } from '../types';
 
 interface ActiveVoice {
   note: string;
-  oscillators: OscillatorNode[];
+  oscillators: (OscillatorNode | AudioBufferSourceNode)[];
   gainNode: GainNode;
   filterNode?: BiquadFilterNode;
   lfo?: OscillatorNode;
@@ -96,7 +96,7 @@ class AudioEngine {
     const voiceGain = ctx.createGain();
     voiceGain.gain.setValueAtTime(0, now);
 
-    const oscillators: OscillatorNode[] = [];
+    const oscillators: (OscillatorNode | AudioBufferSourceNode)[] = [];
     let filterNode: BiquadFilterNode | undefined;
     let lfo: OscillatorNode | undefined;
 
@@ -746,6 +746,110 @@ class AudioEngine {
             ringOsc.stop();
           } catch (e) {}
         }, 200);
+      };
+    } else if (style === 'violin') {
+      // --- CLASSICAL VIOLIN ---
+      // Bowed string model with rich body formant resonances, subtle bow scratch, and expressive vibrato
+      const mainOsc = ctx.createOscillator();
+      mainOsc.type = 'sawtooth';
+      mainOsc.frequency.setValueAtTime(frequency, now);
+
+      // Dual detuned oscillators for ensemble/body chorus thickness
+      const subOsc = ctx.createOscillator();
+      subOsc.type = 'sawtooth';
+      subOsc.frequency.setValueAtTime(frequency + 1.2, now);
+
+      // Rich emotional hand vibrato (LFO frequency modulation) at 5.5 Hz
+      lfo = ctx.createOscillator();
+      lfo.frequency.setValueAtTime(5.5, now);
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.setValueAtTime(2.4, now); // depth of pitch drift in Hz
+
+      lfo.connect(lfoGain);
+      lfoGain.connect(mainOsc.frequency);
+      lfoGain.connect(subOsc.frequency);
+
+      // Violin physical body formant resonance filters
+      // Wood resonance bandpass filter centered around 450 Hz
+      const woodFilter = ctx.createBiquadFilter();
+      woodFilter.type = 'bandpass';
+      woodFilter.frequency.setValueAtTime(450, now);
+      woodFilter.Q.setValueAtTime(1.5, now);
+
+      // Bridge projecting peak resonance centered around 1200 Hz
+      const bridgeFilter = ctx.createBiquadFilter();
+      bridgeFilter.type = 'peaking';
+      bridgeFilter.frequency.setValueAtTime(1200, now);
+      bridgeFilter.Q.setValueAtTime(2.0, now);
+      bridgeFilter.gain.setValueAtTime(8, now);
+
+      // Lowpass filter to smooth off high frequency harshness
+      const dampFilter = ctx.createBiquadFilter();
+      dampFilter.type = 'lowpass';
+      dampFilter.frequency.setValueAtTime(3200, now);
+
+      const oscGain = ctx.createGain();
+      oscGain.gain.setValueAtTime(0.4, now);
+
+      mainOsc.connect(oscGain);
+      subOsc.connect(oscGain);
+      oscGain.connect(woodFilter).connect(bridgeFilter).connect(dampFilter).connect(voiceGain);
+
+      // Rosin-on-string bow friction noise burst
+      const noiseBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+      const noiseData = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < noiseData.length; i++) {
+        noiseData[i] = Math.random() * 2 - 1;
+      }
+      const noiseNode = ctx.createBufferSource();
+      noiseNode.buffer = noiseBuffer;
+
+      const noiseFilter = ctx.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.setValueAtTime(1500, now);
+
+      const noiseGainNode = ctx.createGain();
+      noiseGainNode.gain.setValueAtTime(0.018, now);
+      noiseGainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+      noiseNode.connect(noiseFilter).connect(noiseGainNode).connect(voiceGain);
+
+      // Routing to master
+      voiceGain.connect(this.masterGain);
+      if (this.delayNode) {
+        const sendGain = ctx.createGain();
+        sendGain.gain.setValueAtTime(0.24, now);
+        voiceGain.connect(sendGain).connect(this.delayNode);
+      }
+
+      // Bow pressure attack envelope (swell and release)
+      voiceGain.gain.setValueAtTime(0, now);
+      voiceGain.gain.linearRampToValueAtTime(0.45, now + 0.12); // smooth swell
+      voiceGain.gain.linearRampToValueAtTime(0.38, now + 0.35); // sustain level
+
+      mainOsc.start(now);
+      subOsc.start(now);
+      lfo.start(now);
+      noiseNode.start(now);
+
+      oscillators.push(mainOsc, subOsc, lfo, noiseNode);
+
+      releaseFn = (sustainActive: boolean) => {
+        const relTime = ctx.currentTime;
+        if (sustainActive) return;
+
+        voiceGain.gain.cancelScheduledValues(relTime);
+        voiceGain.gain.setValueAtTime(voiceGain.gain.value, relTime);
+        voiceGain.gain.exponentialRampToValueAtTime(0.0001, relTime + 0.45); // elegant bow lift
+
+        setTimeout(() => {
+          try {
+            mainOsc.stop();
+            subOsc.stop();
+            lfo?.stop();
+            noiseNode.stop();
+          } catch (e) {}
+        }, 500);
       };
     }
 

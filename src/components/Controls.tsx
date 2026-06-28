@@ -42,6 +42,7 @@ export default function Controls({
       case 'guitar': return 'border-orange-500/50 ring-1 ring-orange-500/20 text-orange-400 bg-orange-950/30';
       case 'sitar': return 'border-rose-500/50 ring-1 ring-rose-500/20 text-rose-400 bg-rose-950/30';
       case 'mandolin': return 'border-yellow-500/50 ring-1 ring-yellow-500/20 text-yellow-400 bg-yellow-950/30';
+      case 'violin': return 'border-red-500/50 ring-1 ring-red-500/20 text-red-400 bg-red-950/30';
     }
   };
 
@@ -57,6 +58,7 @@ export default function Controls({
       case 'guitar': return 'text-orange-400';
       case 'sitar': return 'text-rose-400';
       case 'mandolin': return 'text-yellow-400';
+      case 'violin': return 'text-red-400';
     }
   };
 

@@ -1,4 +1,4 @@
-export type PianoStyle = 'grand' | 'electric' | 'synthwave' | 'chiptune' | 'organ' | 'flute' | 'tabla' | 'guitar' | 'sitar' | 'mandolin';
+export type PianoStyle = 'grand' | 'electric' | 'synthwave' | 'chiptune' | 'organ' | 'flute' | 'tabla' | 'guitar' | 'sitar' | 'mandolin' | 'violin';
 
 export interface PianoStyleConfig {
   id: PianoStyle;
@@ -171,6 +171,16 @@ export const STYLE_CONFIGS: Record<PianoStyle, PianoStyleConfig> = {
     bgClass: 'bg-slate-900/60 text-slate-200 border-slate-800',
     accentClass: 'bg-yellow-600 hover:bg-yellow-500 text-white shadow-lg shadow-yellow-600/20',
     textClass: 'text-yellow-400',
+    keyboardBg: 'bg-slate-900 border-slate-800 shadow-2xl shadow-slate-950/50',
+    emoji: '🪕'
+  },
+  violin: {
+    id: 'violin',
+    name: 'Classical Violin',
+    description: 'An incredibly expressive bowed classical violin with rich body formant resonances, subtle bow friction, and emotional hand vibrato.',
+    bgClass: 'bg-slate-900/60 text-slate-200 border-slate-800',
+    accentClass: 'bg-red-600 hover:bg-red-500 text-white shadow-lg shadow-red-600/20',
+    textClass: 'text-red-400',
     keyboardBg: 'bg-slate-900 border-slate-800 shadow-2xl shadow-slate-950/50',
     emoji: '🎻'
   }

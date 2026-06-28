@@ -85,6 +85,12 @@ export default function Visualizer({ activeNotes, style }: VisualizerProps) {
           accent: 'rgba(234, 179, 8, 0.45)', // bright gold
           particleColors: ['#eab308', '#ca8a04', '#a16207', '#fef9c3']
         };
+      case 'violin':
+        return {
+          bg: '#1a1012', // deep elegant string wood
+          accent: 'rgba(239, 68, 68, 0.45)', // rich violin red crimson glow
+          particleColors: ['#ef4444', '#dc2626', '#b91c1c', '#fee2e2']
+        };
     }
   };
 

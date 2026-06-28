@@ -67,6 +67,10 @@ export default function PianoKey({
         return isBlack
           ? 'bg-yellow-500 shadow-[0_0_15px_#eab308] border-yellow-400'
           : 'bg-yellow-100 border-yellow-300 shadow-[inset_0_-8px_0_#eab308]';
+      case 'violin':
+        return isBlack
+          ? 'bg-red-500 shadow-[0_0_15px_#ef4444] border-red-400'
+          : 'bg-red-100 border-red-300 shadow-[inset_0_-8px_0_#ef4444]';
     }
   };
 
@@ -106,9 +110,10 @@ export default function PianoKey({
     onPress(noteConfig.note);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    onPress(noteConfig.note);
+  const handleMouseEnter = (e: React.MouseEvent) => {
+    if (e.buttons === 1) { // Left mouse button is down
+      onPress(noteConfig.note);
+    }
   };
 
   const currentTheme = STYLE_CONFIGS[style];
@@ -118,13 +123,13 @@ export default function PianoKey({
     return (
       <div
         id={`key-${noteConfig.note}`}
+        data-note={noteConfig.note}
         className={baseStyle}
         style={{ left: getBlackKeyLeft(noteConfig.note) }}
         onMouseDown={handleMouseDown}
+        onMouseEnter={handleMouseEnter}
         onMouseUp={() => onRelease(noteConfig.note)}
         onMouseLeave={() => onRelease(noteConfig.note)}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={() => onRelease(noteConfig.note)}
       >
         {/* Highlight ring for Guide mode */}
         {isGuided && (
@@ -150,12 +155,12 @@ export default function PianoKey({
   return (
     <div
       id={`key-${noteConfig.note}`}
+      data-note={noteConfig.note}
       className={baseStyle}
       onMouseDown={handleMouseDown}
+      onMouseEnter={handleMouseEnter}
       onMouseUp={() => onRelease(noteConfig.note)}
       onMouseLeave={() => onRelease(noteConfig.note)}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={() => onRelease(noteConfig.note)}
     >
       {/* Highlight glow for Guide mode */}
       {isGuided && (
@@ -172,7 +177,8 @@ export default function PianoKey({
             style === 'grand' ? 'bg-amber-400' :
             style === 'electric' ? 'bg-cyan-400' :
             style === 'synthwave' ? 'bg-pink-500' :
-            style === 'chiptune' ? 'bg-emerald-400' : 'bg-purple-400'
+            style === 'chiptune' ? 'bg-emerald-400' : 
+            style === 'violin' ? 'bg-red-400' : 'bg-purple-400'
           }`}
         />
       )}
