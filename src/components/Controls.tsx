@@ -1,5 +1,5 @@
 import { PianoStyle, STYLE_CONFIGS } from '../types';
-import { Volume2, Keyboard, RotateCcw, Sparkles } from 'lucide-react';
+import { Volume2, Keyboard, RotateCcw, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ControlsProps {
   currentStyle: PianoStyle;
@@ -82,16 +82,16 @@ export default function Controls({
                 key={styleId}
                 id={`btn-style-${styleId}`}
                 onClick={() => onStyleChange(styleId)}
-                className={`flex items-center gap-2 p-2 rounded-xl text-left border transition-all duration-150 group cursor-pointer ${
+                className={`flex items-center gap-2.5 px-3 py-2 h-14 rounded-xl text-left border transition-all duration-150 group cursor-pointer ${
                   isSelected
                     ? `${getActiveStyleClasses(styleId)} font-semibold`
                     : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800 text-slate-400'
                 }`}
               >
-                <span className="text-lg group-hover:scale-110 transition-transform">
+                <span className="text-lg group-hover:scale-110 transition-transform shrink-0">
                   {config.emoji}
                 </span>
-                <span className="text-xs font-semibold leading-tight">{config.name}</span>
+                <span className="text-xs font-semibold leading-snug line-clamp-2">{config.name}</span>
               </button>
             );
           })}
@@ -166,20 +166,22 @@ export default function Controls({
                 id="btn-octave-down"
                 onClick={() => onOctaveOffsetChange(Math.max(-1, octaveOffset - 1))}
                 disabled={octaveOffset === -1}
-                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-900 border border-slate-800/80 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed hover:text-white cursor-pointer transition-colors"
+                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-900 border border-slate-800/80 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed hover:text-white cursor-pointer transition-colors flex items-center justify-center gap-1"
+                title="Shift Octave Down"
               >
-                &larr; Octave
+                <ChevronLeft className="w-3.5 h-3.5 shrink-0" /> Down
               </button>
-              <div className="px-3 text-xs font-mono font-bold text-slate-200 min-w-[50px] text-center">
+              <div className="px-2 text-[11px] font-mono font-bold text-slate-200 min-w-[45px] text-center shrink-0">
                 {octaveOffset === 0 ? 'Normal' : octaveOffset > 0 ? '+1 Oct' : '-1 Oct'}
               </div>
               <button
                 id="btn-octave-up"
                 onClick={() => onOctaveOffsetChange(Math.min(1, octaveOffset + 1))}
                 disabled={octaveOffset === 1}
-                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-900 border border-slate-800/80 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed hover:text-white cursor-pointer transition-colors"
+                className="flex-1 py-1.5 text-xs font-bold rounded-lg bg-slate-900 border border-slate-800/80 text-slate-300 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed hover:text-white cursor-pointer transition-colors flex items-center justify-center gap-1"
+                title="Shift Octave Up"
               >
-                Octave &rarr;
+                Up <ChevronRight className="w-3.5 h-3.5 shrink-0" />
               </button>
             </div>
           </div>
