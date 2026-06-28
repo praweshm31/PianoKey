@@ -68,192 +68,10 @@ function bufferToWav(buffer: AudioBuffer): Blob {
   return new Blob([view], { type: 'audio/wav' });
 }
 
-interface MelodyNote {
-  freq: number;
-  start: number;
-  duration: number;
-}
-
-// Preset instrumental generator
-function generatePresetBeat(ctx: AudioContext, type: 'guitar' | 'violin' | 'piano'): AudioBuffer {
-  const duration = 12; // 12 seconds total play time
-  const sampleRate = ctx.sampleRate;
-  const numSamples = sampleRate * duration;
-  const buffer = ctx.createBuffer(2, numSamples, sampleRate);
-  const left = buffer.getChannelData(0);
-  const right = buffer.getChannelData(1);
-
-  // High-fidelity software feedback delay lines for spacious studio-quality stereo reverb
-  const delaySamples = Math.floor(sampleRate * 0.32); // 320ms echo delay
-  const decay = 0.35; // feedback decay coefficient
-  const delayLineL = new Float32Array(delaySamples);
-  const delayLineR = new Float32Array(delaySamples);
-  let delayIdx = 0;
-
-  // 1. Classical Violin: Vivaldi's "Spring" (G Major)
-  const violinMelody: MelodyNote[] = [
-    { freq: 392.00, start: 0.0, duration: 0.4 },  // G4
-    { freq: 493.88, start: 0.4, duration: 0.4 },  // B4
-    { freq: 493.88, start: 0.8, duration: 0.4 },  // B4
-    { freq: 493.88, start: 1.2, duration: 0.4 },  // B4
-    { freq: 440.00, start: 1.6, duration: 0.4 },  // A4
-    { freq: 392.00, start: 2.0, duration: 0.4 },  // G4
-    { freq: 587.33, start: 2.4, duration: 0.8 },  // D5
-    { freq: 587.33, start: 3.2, duration: 0.4 },  // D5
-    { freq: 523.25, start: 3.6, duration: 0.4 },  // C5
-    { freq: 493.88, start: 4.0, duration: 0.4 },  // B4
-    { freq: 493.88, start: 4.4, duration: 0.4 },  // B4
-    { freq: 493.88, start: 4.8, duration: 0.4 },  // B4
-    { freq: 440.00, start: 5.2, duration: 0.4 },  // A4
-    { freq: 392.00, start: 5.6, duration: 0.4 },  // G4
-    { freq: 587.33, start: 6.0, duration: 1.0 },  // D5
-    { freq: 493.88, start: 7.2, duration: 0.4 },  // B4
-    { freq: 523.25, start: 7.6, duration: 0.4 },  // C5
-    { freq: 587.33, start: 8.0, duration: 0.4 },  // D5
-    { freq: 523.25, start: 8.4, duration: 0.4 },  // C5
-    { freq: 493.88, start: 8.8, duration: 0.4 },  // B4
-    { freq: 440.00, start: 9.2, duration: 1.2 }   // A4
-  ];
-
-  // 2. Classical Guitar: Spanish Romance (E minor)
-  const guitarMelody: MelodyNote[] = [
-    { freq: 493.88, start: 0.0, duration: 0.55 }, // B4
-    { freq: 493.88, start: 0.6, duration: 0.55 }, // B4
-    { freq: 493.88, start: 1.2, duration: 0.55 }, // B4
-    { freq: 493.88, start: 1.8, duration: 0.55 }, // B4
-    { freq: 440.00, start: 2.4, duration: 0.55 }, // A4
-    { freq: 392.00, start: 3.0, duration: 0.55 }, // G4
-    { freq: 369.99, start: 3.6, duration: 0.55 }, // F#4
-    { freq: 329.63, start: 4.2, duration: 0.55 }, // E4
-    { freq: 293.66, start: 4.8, duration: 0.55 }, // D4
-    { freq: 329.63, start: 5.4, duration: 0.55 }, // E4
-    { freq: 392.00, start: 6.0, duration: 0.55 }, // G4
-    { freq: 493.88, start: 6.6, duration: 0.55 }, // B4
-    { freq: 659.25, start: 7.2, duration: 1.2 }   // E5
-  ];
-
-  // 3. Classical Piano: Beethoven's "Für Elise" (A minor)
-  const pianoMelody: MelodyNote[] = [
-    { freq: 659.25, start: 0.0, duration: 0.28 }, // E5
-    { freq: 622.25, start: 0.3, duration: 0.28 }, // D#5
-    { freq: 659.25, start: 0.6, duration: 0.28 }, // E5
-    { freq: 622.25, start: 0.9, duration: 0.28 }, // D#5
-    { freq: 659.25, start: 1.2, duration: 0.28 }, // E5
-    { freq: 493.88, start: 1.5, duration: 0.28 }, // B4
-    { freq: 587.33, start: 1.8, duration: 0.28 }, // D5
-    { freq: 523.25, start: 2.1, duration: 0.28 }, // C5
-    { freq: 440.00, start: 2.4, duration: 1.2 }   // A4
-  ];
-
-  const melody = type === 'violin' ? violinMelody : type === 'guitar' ? guitarMelody : pianoMelody;
-
-  for (let i = 0; i < numSamples; i++) {
-    const t = i / sampleRate;
-    let synth = 0;
-
-    // Find the note that is active at the current sample timestamp
-    const activeNote = melody.find(n => t >= n.start && t < n.start + n.duration);
-
-    if (activeNote) {
-      const noteTime = t - activeNote.start;
-      const freq = activeNote.freq;
-
-      if (type === 'guitar') {
-        // Soft Spanish Romance acoustic plucks
-        const guitarEnv = Math.exp(-2.2 * noteTime);
-        let wave = Math.sin(2 * Math.PI * freq * noteTime);
-        wave += Math.sin(2 * Math.PI * freq * 2 * noteTime) * 0.28;
-        wave += Math.sin(2 * Math.PI * freq * 3 * noteTime) * 0.10;
-        wave += Math.sin(2 * Math.PI * freq * 4 * noteTime) * 0.04;
-
-        synth = wave * guitarEnv * 0.25;
-
-      } else if (type === 'violin') {
-        // High-Fidelity European Classical Violin
-        const attackTime = 0.12;
-        const decayTime = 0.15;
-        let violinEnv = 1.0;
-        if (noteTime < attackTime) {
-          violinEnv = noteTime / attackTime;
-        } else if (noteTime > activeNote.duration - decayTime) {
-          violinEnv = Math.max(0, (activeNote.duration - noteTime) / decayTime);
-        }
-
-        // Expressive vibrato onset (human touch)
-        const vibratoOnsetTime = Math.min(1.0, noteTime / 0.35);
-        const vibratoRate = 5.8;
-        const vibratoDepth = 0.008 * vibratoOnsetTime * Math.sin(2 * Math.PI * vibratoRate * noteTime);
-        const modulatedFreq = freq * (1.0 + vibratoDepth);
-
-        // 12 Harmonics with detailed wooden body formant resonance modeling
-        let wave = 0;
-        for (let h = 1; h <= 12; h++) {
-          const hFreq = modulatedFreq * h;
-          let amp = 1.0 / Math.pow(h, 1.15);
-
-          const peakAir = Math.exp(-Math.pow((hFreq - 280) / 75, 2)) * 1.6;
-          const peakWood = Math.exp(-Math.pow((hFreq - 550) / 110, 2)) * 1.9;
-          const peakBridge = Math.exp(-Math.pow((hFreq - 1100) / 220, 2)) * 1.3;
-          const peakBrilliance = Math.exp(-Math.pow((hFreq - 2600) / 350, 2)) * 0.75;
-
-          const formantGain = 0.4 + peakAir + peakWood + peakBridge + peakBrilliance;
-          amp *= formantGain;
-
-          if (hFreq > 3800) {
-            amp *= Math.max(0, 1.0 - (hFreq - 3800) / 2200);
-          }
-
-          const phaseShift = (h * h * 0.15) % (2 * Math.PI);
-          wave += Math.sin(2 * Math.PI * hFreq * noteTime + phaseShift) * amp;
-        }
-
-        // Realistic bow traction friction transients
-        const noiseVal = Math.sin(noteTime * 44100 * 0.8) * Math.cos(noteTime * 22050 * 1.3);
-        const bowNoise = noiseVal * 0.02 * Math.exp(-8.0 * noteTime);
-        const bowFriction = noiseVal * 0.005 * (0.8 + 0.2 * Math.sin(2 * Math.PI * 15 * noteTime));
-
-        synth = (wave + bowNoise + bowFriction * violinEnv) * violinEnv * 0.16;
-
-      } else {
-        // Crystalline Classical Piano (Für Elise)
-        const pianoEnv = Math.exp(-1.8 * noteTime);
-        let wave = Math.sin(2 * Math.PI * freq * noteTime);
-        wave += Math.sin(2 * Math.PI * freq * 2 * noteTime) * 0.20;
-        wave += Math.sin(2 * Math.PI * freq * 3 * noteTime) * 0.06;
-
-        synth = wave * pianoEnv * 0.22;
-      }
-    }
-
-    const limited = Math.max(-1, Math.min(1, synth));
-
-    // Read echo from software delay line
-    const echoL = delayLineL[delayIdx];
-    const echoR = delayLineR[delayIdx];
-
-    // Mix current sample with stereo delay
-    const mixedL = limited * 0.8 + echoL * decay;
-    const mixedR = limited * 0.8 - echoR * decay; // phase inversion for wide stereo field
-
-    // Feed current + slight echo back to delay lines
-    delayLineL[delayIdx] = limited + echoL * 0.25;
-    delayLineR[delayIdx] = limited + echoR * 0.25;
-
-    delayIdx = (delayIdx + 1) % delaySamples;
-
-    left[i] = Math.max(-1, Math.min(1, mixedL));
-    right[i] = Math.max(-1, Math.min(1, mixedR));
-  }
-
-  return buffer;
-}
-
 export default function SongCreator() {
   const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
 
   // Tracks State
-  const [instrumentalSource, setInstrumentalSource] = useState<'preset' | 'upload'>('preset');
-  const [presetType, setPresetType] = useState<'guitar' | 'violin' | 'piano'>('guitar');
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [instrumentalBuffer, setInstrumentalBuffer] = useState<AudioBuffer | null>(null);
   
@@ -302,17 +120,6 @@ export default function SongCreator() {
     return context;
   };
 
-  // Generate preset beat whenever selection changes
-  useEffect(() => {
-    if (instrumentalSource === 'preset') {
-      const ctx = getAudioContext();
-      const buffer = generatePresetBeat(ctx, presetType);
-      setInstrumentalBuffer(buffer);
-      // If playing, stop it to let user update beat
-      stopInstrumentalOnly();
-    }
-  }, [presetType, instrumentalSource]);
-
   // Handle uploading of files
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -326,7 +133,6 @@ export default function SongCreator() {
       const arrayBuffer = await file.arrayBuffer();
       const decodedBuffer = await ctx.decodeAudioData(arrayBuffer);
       setInstrumentalBuffer(decodedBuffer);
-      setInstrumentalSource('upload');
     } catch (err) {
       console.error('Error decoding audio file:', err);
       alert('Could not parse audio file. Please upload a standard MP3, WAV, or AAC file.');
@@ -341,7 +147,7 @@ export default function SongCreator() {
     }
 
     if (!instrumentalBuffer) {
-      alert('Please upload an instrumental file or select a preset first.');
+      alert('Please upload an instrumental file first.');
       return;
     }
 
@@ -719,8 +525,18 @@ export default function SongCreator() {
               </span>
             </h2>
             <p className="text-xs text-slate-400">
-              Record vocals over high-fidelity custom classical solo tunes, mix track volumes, and export finished songs.
+              Record vocals over high-fidelity piano or bansuri flute instrumental styles, mix track volumes, and export finished songs.
             </p>
+            <div className="mt-2.5 space-y-2 max-w-xl">
+              <p className="text-[11px] text-slate-500 bg-slate-950/20 border border-slate-800/40 rounded-lg p-2.5 leading-relaxed">
+                <span className="font-semibold text-slate-400 block mb-1">Recommended Piano Style Prompt:</span>
+                A single, isolated studio recording of an acoustic grand piano playing one clear note: [Insert Note here, e.g., Middle C / C4]. Clean sample, high fidelity, 440Hz tuning. Natural, warm tone with a soft attack, a rich sustain, and a smooth, realistic decay. Zero background noise, zero echo, no melody, no chords, no underlying beat. Just one pure, single piano key strike
+              </p>
+              <p className="text-[11px] text-slate-500 bg-slate-950/20 border border-slate-800/40 rounded-lg p-2.5 leading-relaxed">
+                <span className="font-semibold text-slate-400 block mb-1">Recommended Bansuri Flute Style Prompt:</span>
+                A raw studio audio sample pack of a premium Hindustani classical Bansuri flute. The instrument plays a sequence of single, separated notes in a scale [e.g., C4, D4, E4, F4]. Each note must be held steadily for 3 seconds, followed by 2 seconds of absolute silence before the next note begins. Crisp audio, dry acoustic sound with no echo, no delay, and no background instruments. Clean stem file for sampling.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -736,96 +552,48 @@ export default function SongCreator() {
               <span className="text-xs font-bold text-slate-300 font-mono flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-indigo-500" /> TRACK 1: INSTRUMENTAL
               </span>
-              <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs">
-                <button
-                  onClick={() => setInstrumentalSource('preset')}
-                  className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                    instrumentalSource === 'preset'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Presets
-                </button>
-                <button
-                  onClick={() => setInstrumentalSource('upload')}
-                  className={`px-3 py-1 rounded-md font-medium cursor-pointer transition-colors ${
-                    instrumentalSource === 'upload'
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  Upload File
-                </button>
-              </div>
             </div>
 
-            {instrumentalSource === 'preset' ? (
-              <div className="space-y-2.5">
-                <span className="text-[11px] text-slate-500 block">Choose a custom classical solo tune:</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'guitar', label: 'Soft Guitar', emoji: '🎸' },
-                    { id: 'violin', label: 'Classical Violin', emoji: '🎻' },
-                    { id: 'piano', label: 'Soft Piano', emoji: '🎹' },
-                  ].map((preset) => (
-                    <button
-                      key={preset.id}
-                      onClick={() => setPresetType(preset.id as any)}
-                      className={`py-2 px-3 rounded-lg text-center border text-xs font-semibold cursor-pointer transition-all duration-150 ${
-                        presetType === preset.id
-                          ? 'bg-indigo-500/10 border-indigo-500/50 text-indigo-400'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:bg-slate-800'
-                      }`}
-                    >
-                      <span className="text-sm block mb-1">{preset.emoji}</span>
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
+            <div className="space-y-3">
+              <div className="border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/40 p-4 rounded-lg text-center relative cursor-pointer group transition-colors">
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                />
+                <Upload className="w-5 h-5 text-slate-500 mx-auto mb-2 group-hover:text-indigo-400 transition-colors" />
+                <span className="text-xs font-semibold text-slate-300 block">
+                  {uploadedFileName ? 'Change Audio File' : 'Drag & Drop or Click to Upload'}
+                </span>
+                <span className="text-[10px] text-slate-500 mt-1 block">MP3, WAV, M4A or OGG</span>
               </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="border border-dashed border-slate-800 hover:border-slate-700 bg-slate-900/40 p-4 rounded-lg text-center relative cursor-pointer group transition-colors">
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={handleFileUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                  />
-                  <Upload className="w-5 h-5 text-slate-500 mx-auto mb-2 group-hover:text-indigo-400 transition-colors" />
-                  <span className="text-xs font-semibold text-slate-300 block">
-                    {uploadedFileName ? 'Change Audio File' : 'Drag & Drop or Click to Upload'}
-                  </span>
-                  <span className="text-[10px] text-slate-500 mt-1 block">MP3, WAV, M4A or OGG</span>
-                </div>
 
-                {uploadedFileName && (
-                  <div className="flex items-center justify-between bg-indigo-950/20 border border-indigo-900/30 rounded-lg p-2.5 text-xs">
-                    <div className="flex items-center gap-2 truncate">
-                      <Disc className="w-4 h-4 text-indigo-400 shrink-0 animate-spin" />
-                      <span className="text-slate-300 font-medium truncate">{uploadedFileName}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        setUploadedFileName('');
-                        setInstrumentalBuffer(null);
-                      }}
-                      className="text-slate-500 hover:text-red-400 cursor-pointer"
-                      title="Clear File"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+              {uploadedFileName && (
+                <div className="flex items-center justify-between bg-indigo-950/20 border border-indigo-900/30 rounded-lg p-2.5 text-xs">
+                  <div className="flex items-center gap-2 truncate">
+                    <Disc className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <span className="text-slate-300 font-medium truncate">{uploadedFileName}</span>
                   </div>
-                )}
-              </div>
-            )}
+                  <button
+                    onClick={() => {
+                      setUploadedFileName('');
+                      setInstrumentalBuffer(null);
+                    }}
+                    className="text-slate-500 hover:text-red-400 cursor-pointer"
+                    title="Clear File"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
 
             {instrumentalBuffer && (
               <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between">
                 <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
                   <Disc className={`w-3.5 h-3.5 text-indigo-400 ${isPlayingInstrumental ? 'animate-spin' : ''}`} />
-                  {instrumentalSource === 'preset' ? 'Selected preset classical tune ready' : 'Uploaded track ready'}
+                  Uploaded track ready
                 </span>
                 <button
                   onClick={playInstrumentalOnly}
@@ -876,7 +644,7 @@ export default function SongCreator() {
                     Play instrumental while recording
                   </span>
                   <span className="text-[10px] text-slate-400 block mt-0.5">
-                    Plays back the custom classical tune once in sync with your live voice.
+                    Plays back the uploaded backing track in sync with your live voice.
                   </span>
                 </div>
               </label>
