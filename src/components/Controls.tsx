@@ -61,9 +61,9 @@ export default function Controls({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-900/50 border border-slate-800 backdrop-blur-md p-5 rounded-2xl shadow-xl">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 bg-slate-900/50 border border-slate-800 backdrop-blur-md p-5 rounded-2xl shadow-xl">
       {/* 1. Style Selection (5 columns) */}
-      <div className="lg:col-span-5 flex flex-col gap-3">
+      <div className="xl:col-span-5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <Sparkles className={`w-4 h-4 animate-pulse ${getStyleIndicatorColor()}`} />
           <h2 className="text-sm font-bold tracking-tight text-slate-200 uppercase font-display">
@@ -73,7 +73,7 @@ export default function Controls({
         <p className="text-xs text-slate-400 leading-relaxed max-w-md">
           Each instrument style activates high-fidelity multi-oscillator synthesizers.
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-3 gap-2 mt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-3 gap-2 mt-1">
           {(Object.keys(STYLE_CONFIGS) as PianoStyle[]).map((styleId) => {
             const config = STYLE_CONFIGS[styleId];
             const isSelected = currentStyle === styleId;
@@ -99,10 +99,10 @@ export default function Controls({
       </div>
 
       {/* Divider */}
-      <div className="hidden lg:block lg:col-span-1 border-r border-slate-800/60 my-1 justify-self-center" />
+      <div className="hidden xl:block xl:col-span-1 border-r border-slate-800/60 my-1 justify-self-center" />
 
       {/* 2. Audio Settings & Keyboard Controls (6 columns) */}
-      <div className="lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="xl:col-span-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
         
         {/* Left Column: Volume and Sustain */}
         <div className="flex flex-col gap-4">
